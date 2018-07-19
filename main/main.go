@@ -9,18 +9,16 @@ package main
 
 import (
 	"fmt"
-	"sync"
 	. "github.com/abitofhelp/producerconsumer/consumer"
 	. "github.com/abitofhelp/producerconsumer/producer"
+	"sync"
 )
 
 // Function main is the entry point for the application and is responsible
 // for configuring its environment.
 func main() {
-
-	// Variable wg is main's WaitGroup that is used to be able
-	// to detect when all of the goroutines that are launched
-	// have completed.
+	// Variable wg is main's WaitGroup, which detects when all of the
+	// goroutines that were launched have completed.
 	var wg sync.WaitGroup
 
 	// Variable ch is the channel into which the producer sends file
@@ -28,22 +26,44 @@ func main() {
 	// retrieve the paths.
 	ch := make(chan string)
 
-	// Increment the producer's WaitGroup counter for the consumer goroutine.
+	// Increment the producer's WaitGroup counter for the goroutine
+	// launching the Consumer().
 	wg.Add(1)
-	// Launch the consumer goroutine, which will block until the producer
+	// Launch the goroutine, which will block until the producer
 	// sends file system directory paths into the channel.
-	go Consumer(ch, &wg)
+	go func() {
 
-	// Increment the producer's WaitGroup counter for the consumer goroutine.
+		// Decrement the consumer's WaitGroup counter just before the goroutine exits.
+		defer wg.Done()
+		Consumer(ch)
+	}()
+
+	// Increment the producer's WaitGroup counter for the goroutine
+	// launching the Producer().
 	wg.Add(1)
-	// Launch the consumer goroutine, which will send file system directory
+	// Launch the goroutine, which will send file system directory
 	// paths into the channel.
-	go Producer(ch, &wg)
+	go func() {
+
+		// Decrement the producer's WaitGroup counter just before the goroutine exits.
+		defer wg.Done()
+
+		// The consumer is running in parallel to the producer.  Function main() will wait for
+		// the consumer and producer goroutines to complete at its wg.Wait().  It is important to
+		// know that if the producer does not close the channel, then the consumer will block
+		// and wg.Wait() will never be reached in Main().  Closing the channel signals the consumer
+		// that production has completed.  When the consumer empties the channel, wg.Wait() in
+		// Main() will complete.  The channel will be closed just before the goroutine exits.
+		defer close(ch)
+
+		// Load the source directories into the channel so they can be consumed.
+		Producer(ch, []string{"/tmp", "/home/aboh/Downloads", "/home/aboh/go"})
+	}()
 
 	// Wait here until the producer and consumer have completed their work,
-	// which will be signaled by wg's internal goroutine counter being zero.
+	// which will be signaled the channel being closed and by wg's internal
+	// goroutine counter being zero.
 	wg.Wait()
-	//close(ch)
 
 	// Adios!
 	fmt.Println("All done!")
