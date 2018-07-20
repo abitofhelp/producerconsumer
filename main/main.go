@@ -32,7 +32,6 @@ func main() {
 	// Launch the goroutine, which will block until the producer
 	// sends file system directory paths into the channel.
 	go func() {
-
 		// Decrement the consumer's WaitGroup counter just before the goroutine exits.
 		defer wg.Done()
 		Consumer(ch)
@@ -44,7 +43,6 @@ func main() {
 	// Launch the goroutine, which will send file system directory
 	// paths into the channel.
 	go func() {
-
 		// Decrement the producer's WaitGroup counter just before the goroutine exits.
 		defer wg.Done()
 
