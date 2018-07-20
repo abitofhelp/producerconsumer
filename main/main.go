@@ -24,7 +24,7 @@ func main() {
 	// Variable ch is the channel into which the producer sends file
 	// system directory paths, and from which the consumer will
 	// retrieve the paths.
-	ch := make(chan string)
+	ch := make(chan string, 2)
 
 	// Increment the producer's WaitGroup counter for the goroutine
 	// launching the Consumer().
