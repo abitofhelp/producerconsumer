@@ -14,7 +14,8 @@ import (
 // Function Consumer receives file system directory paths from the channel.
 // Parameter ch is a unidirectional channel from which directory paths are
 // retrieved.
-// It returns when all of the goroutines have completed processing the channel.
+// It returns after the Producer has closed the channel to signal no more data, and
+// the Consumer is no longer getting data from the channel.
 func Consumer(ch <-chan string) {
 	// Variable wg is the consumer's WaitGroup, which detects when all of the
 	// goroutines that were launched have completed.
@@ -34,7 +35,7 @@ func Consumer(ch <-chan string) {
 
 			// The consumer's work is pretty simple...  Write the directory path that was retrieved
 			// from the channel to stdout.
-			fmt.Println("Received: " + path)
+			fmt.Println("Received:\t" + path)
 		}(path)
 		// The closure is only bound to that one variable, 'path'.  There is a very good
 		// chance that not adding 'path' as a parameter to the closure, will result in seeing

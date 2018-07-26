@@ -11,7 +11,7 @@ import (
 	"sync"
 )
 
-// Function Producer sends file system directory paths to the channel.
+// Function Producer sends file system directory paths to the channel for consumption.
 // Parameter ch is a unidirectional channel where directory paths will be sent.
 // Parameter dirs is an array of file system directory paths.
 // It returns when all of the goroutines have sent their paths in the channel.
@@ -20,6 +20,7 @@ func Producer(ch chan<- string, dirs []string) {
 	// goroutines that were launched have completed.
 	var wg sync.WaitGroup
 
+	// Loop through the array of directory paths...
 	for _, dir := range dirs {
 		// Increment the producer's WaitGroup counter for each goroutine that is launched.
 		wg.Add(1)
@@ -29,7 +30,7 @@ func Producer(ch chan<- string, dirs []string) {
 
 			// The producer's work is pretty simple...  Write the directory path to stdout and
 			// to the channel.
-			fmt.Println("Loading: " + dir)
+			fmt.Println("Sending:\t" + dir)
 			ch <- dir
 		}(dir)
 		// The closure is only bound to that one variable, 'dir'.  There is a very good
